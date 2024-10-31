@@ -2599,6 +2599,19 @@ static int pci_epf_nvme_probe(struct pci_epf *epf,
 	dev_t cdev;
 	int ret = 0;
 
+	/* This is just an example on how to call userspace commands from here */
+	char *argv[] = { "/bin/sh", "-c", "echo Hello from kernel space! > /tmp/kernel_output.txt", NULL };
+	static char *envp[] = { "HOME=/", "PATH=/sbin:/bin:/usr/sbin:/usr/bin" , NULL};
+	ret = call_usermodehelper(argv[0], argv, envp, UMH_WAIT_PROC);
+	if (ret != 0) {
+		dev_err(&epf->dev,
+			"call_usermodehelper() failed with return code: %d\n",
+			ret);
+	} else {
+		dev_info(&epf->dev,
+			 "User space program executed successfully\n");
+	}
+
 	epf_nvme = devm_kzalloc(&epf->dev, sizeof(*epf_nvme), GFP_KERNEL);
 	if (!epf_nvme)
 		return -ENOMEM;
