@@ -64,6 +64,8 @@ Board setup instructions are provided [here](doc/platform.md)
 
 Firmware (Linux driver for the eNVMe endpoint function) information, capabilities, development information can be found [here](firmware)
 
+As this project shares many aspects with out NVMe computational storage project https://github.com/rick-heig/nvme_csd, feel free to check it out.
+
 ### Known issues
 
 - PCIe link instabilities
