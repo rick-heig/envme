@@ -2496,11 +2496,11 @@ static ssize_t pci_epf_nvme_pci_dev_read(struct file* file, char* buffer, size_t
 	if (!local_buffer)
 		return -ENOMEM;
 
-	dev_info(dev, "Request to read %zu bytes from offset %llu\n", len, *offset);
+	dev_dbg(dev, "Request to read %zu bytes from offset 0x%llx\n", len, *offset);
 
 	while (bytes_transfered < len) {
 		btt = min(len - bytes_transfered, LOCAL_BUFFER_SIZE);
-		dev_info(dev, "btt: %zu, bytes_transfered: %zu\n", btt, bytes_transfered);
+		//dev_dbg(dev, "btt: %zu, bytes_transfered: %zu\n", btt, bytes_transfered);
 		seg.pci_addr = *offset + bytes_transfered;
 		seg.size = btt;
 		ret = pci_epf_nvme_transfer(epf_nvme, &seg, DMA_FROM_DEVICE, local_buffer);
@@ -2536,7 +2536,7 @@ static ssize_t pci_epf_nvme_pci_dev_write(struct file* file, const char* buffer,
 	if (!offset)
 		return -EINVAL;
 
-	dev_info(dev, "Request to write %zu bytes at offset %llu\n", len, *offset);
+	dev_dbg(dev, "Request to write %zu bytes at offset 0x%llx\n", len, *offset);
 
 	if (!epf_nvme->link_up) {
 		dev_warn(dev, "Link is down cannot write\n");
@@ -2549,7 +2549,7 @@ static ssize_t pci_epf_nvme_pci_dev_write(struct file* file, const char* buffer,
 
 	while (bytes_transfered < len) {
 		btt = min(len - bytes_transfered, LOCAL_BUFFER_SIZE);
-		dev_info(dev, "btt: %zu, bytes_transfered: %zu\n", btt, bytes_transfered);
+		//dev_dbg(dev, "btt: %zu, bytes_transfered: %zu\n", btt, bytes_transfered);
 		/* Maybe this is possible in zero-copy */
 		if (copy_from_user(local_buffer, buffer + bytes_transfered, btt)) {
 			dev_err(dev, "Failed to copy data from user\n");
