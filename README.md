@@ -64,3 +64,17 @@ Board setup instructions are provided [here](doc/platform.md)
 
 Firmware (Linux driver for the eNVMe endpoint function) information, capabilities, development information can be found [here](firmware)
 
+### Known issues
+
+- PCIe link instabilities
+  Because the platform board was not built to be a PCIe endpoint (device) but rather a root complex (host), the board has its own PCIe clock generated on the PCB, clock that goes to the SoC and the M.2 edge connector for a potential device. Therefore this board cannot receive a clock from the host PC and has no other choice than to operate in [separate reference clock architecture](https://www.ti.com/lit/an/snaa386/snaa386.pdf), up to 600 ppm (parts per million) difference in the (100MHz) clocks is allowed.
+  When the clock difference is too big, or the link is bad (e.g., noise, bad cables and adapters), the following can happen:
+    - Link disconnects / reconnects (will be shown in dmesg as Link DOWN/UP)
+    - PCIe DMA timeouts, once this happens the DMA will not operate anymore until a reboot
+    - (Very) slow PCIe link
+
+  This is very dependent on the host PC motherboard and CPU. We observed that relying on a PCIe switch which generates its own clock worked well. For example [PLX PEX8747](https://www.broadcom.com/products/pcie-switches-retimers/pcie-switches/pex8747) switches as in this [NVMe RAID Controller](https://www.highpoint-tech.com/product-page/ssd7101a-1).
+
+  If this happens you can try setting the PCIe link to gen. 2 (PCIe 2.0) in the motherboard BIOS. The PCIe speed could also be changed in the device tree (overlay) used on the embedded platform.
+
+  Maybe there is room for improvement in the Rockchip RK3588 PCIe controller IP or PHY Linux driver.
