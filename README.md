@@ -2,7 +2,7 @@
 
 This project allows to create NVMe devices with extra capabilities in order to explore the security implications of an *evil* NVMe device.
 
-Read more about eNVMe in our [**Paper:** Pandora's Box in Your SSD: The Untold Dangers of NVMe](https://arxiv.org/abs/2411.00439)
+Read more about eNVMe in our [**Paper:** Pandora's Box in Your SSD: The Untold Dangers of NVMe](https://arxiv.org/abs/2411.00439) - [(PDF)](https://arxiv.org/pdf/2411.00439)
 
 ---
 
