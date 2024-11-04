@@ -2,6 +2,10 @@
 
 This project allows to create NVMe devices with extra capabilities in order to explore the security implications of an *evil* NVMe device.
 
+Read more about eNVMe in our [**Paper:** Pandora's Box in Your SSD: The Untold Dangers of NVMe](https://arxiv.org/abs/2411.00439)
+
+---
+
 A FriendlyElec NanoPC-T6 board modified to act as an NVMe drive :
 
 ![T6](res/pictures/T6.jpg)
