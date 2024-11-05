@@ -64,7 +64,31 @@ In order to run the eNVMe project you will need :
 
 ## Further information
 
-Board setup instructions are provided [here](doc/platform.md)
+### Getting started
+
+The easiest way to get started is to download the prebuilt image on the [release page](https://github.com/rick-heig/eNVMe/releases/) and write it to an SD card (instructions on release page).
+
+The SD card image is ready to use for the [FriendlyElec CM3588 + NAS Kit](https://www.friendlyelec.com/index.php?route=product/product&product_id=294) which we recommend, if you are using the [FriendlyElec NanoPC T6](https://www.friendlyelec.com/index.php?route=product/product&product_id=292), replace the `/boot/extlinux/extlinux.conf` file by `/boot/extlinux/extlinux.conf.t6`. For example:
+
+```shell
+# Suppose the rootfs of the SD is mounted in /media/<user>/rootfs
+sudo mv /media/<user>/rootfs/boot/exlinux/extlinux.conf.t6 /media/<user>/rootfs/boot/extlinux/extlinux.conf
+```
+
+Once ready, insert SD card in board and turn it on, connect through UART or SSH and launch the eNVMe firmware with:
+
+```shell
+# Start without backing storage (will read 0's)
+sudo nvme-epf --model "I am a null block disk" start
+# Start with backing storage (example with /dev/nvme0n1)
+sudo nvme-epf --model "Trust me 980 pro" --loop /dev/nvme0n1 start
+```
+
+The `--loop` option allows to choose the backing storage, for example an NVMe SSD, if you are on the CM3588 and have one installed. For more information on the firmware and launching see [firmware/README.md](firmware/README.md).
+
+### Going further
+
+Board setup instructions to setup from scratch are provided [here](doc/platform.md)
 
 Firmware (Linux driver for the eNVMe endpoint function) information, capabilities, development information can be found [here](firmware)
 
@@ -72,6 +96,8 @@ As this project shares many aspects with out NVMe computational storage project 
 
 ### Known issues
 
+- The current prebuilt SD card image doesn't have USB support on the T6, and on the CM3588 only the bottom USB3 is working.
+  To fix this requires some changes in the associated device tree and there may be an issue with a driver.
 - PCIe link instabilities
   Because the platform board was not built to be a PCIe endpoint (device) but rather a root complex (host), the board has its own PCIe clock generated on the PCB, clock that goes to the SoC and the M.2 edge connector for a potential device. Therefore this board cannot receive a clock from the host PC and has no other choice than to operate in [separate reference clock architecture](https://www.ti.com/lit/an/snaa386/snaa386.pdf), up to 600 ppm (parts per million) difference in the (100MHz) clocks is allowed.
   When the clock difference is too big, or the link is bad (e.g., noise, bad cables and adapters), the following can happen:
@@ -81,6 +107,6 @@ As this project shares many aspects with out NVMe computational storage project 
 
   This is very dependent on the host PC motherboard and CPU. We observed that relying on a PCIe switch which generates its own clock worked well. For example [PLX PEX8747](https://www.broadcom.com/products/pcie-switches-retimers/pcie-switches/pex8747) switches as in this [NVMe RAID Controller](https://www.highpoint-tech.com/product-page/ssd7101a-1).
 
-  If this happens you can try setting the PCIe link to gen. 2 (PCIe 2.0) in the motherboard BIOS. The PCIe speed could also be changed in the device tree (overlay) used on the embedded platform.
+  If this happens you can try setting the PCIe link to gen. 2 (PCIe 2.0) in the motherboard BIOS. The PCIe speed could also be changed in the device tree (overlay) used on the embedded platform. On the prebuilt SD card image in `/boot/` there are the files `rk3588-friendlyelec-cm3588-nas-ep-pcie2.dtbo` and `rk3588-nanopc-t6-pcie-ep-pcie2.dtbo` which can be selected in `/boot/extlinux/extlinux.conf` to limit the embedded controller to PCIe 2.0 speed.
 
   Maybe there is room for improvement in the Rockchip RK3588 PCIe controller IP or PHY Linux driver.
