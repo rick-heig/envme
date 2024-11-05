@@ -33,12 +33,16 @@ pushd LeechCore-plugins/leechcore_device_generic
 make
 popd
 # Build PCI Leech
-cd pcileech/pcileech
+pushd pcileech/pcileech
 make
 cd ../files
 cp ../../LeechCore-plugins/files/leechcore_device_generic.so .
 popd
 ```
+
+# PCILeech usage examples
+
+In the embedded platform, go in the `PCILeech/pcileech/files` directory as that is where the executable and libraries are.
 
 ## Windows target
 
