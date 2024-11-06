@@ -64,7 +64,7 @@ In order to run the eNVMe project you will need :
 
 ## Further information
 
-### Getting started
+### Getting started
 
 The easiest way to get started is to download the prebuilt image on the [release page](https://github.com/rick-heig/eNVMe/releases/) and write it to an SD card (instructions on release page).
 
@@ -92,12 +92,14 @@ Board setup instructions to setup from scratch are provided [here](doc/platform.
 
 Firmware (Linux driver for the eNVMe endpoint function) information, capabilities, development information can be found [here](firmware)
 
-As this project shares many aspects with out NVMe computational storage project https://github.com/rick-heig/nvme_csd, feel free to check it out.
+As this project shares many aspects with our NVMe computational storage project https://github.com/rick-heig/nvme_csd, feel free to check it out.
+
+### Notes
+
+- On the CM3588 + NAS Kit the USB-C port is configured as OTG by default.
 
 ### Known issues
 
-- The current prebuilt SD card image doesn't have USB support on the T6, and on the CM3588 only the bottom USB3 is working.
-  To fix this requires some changes in the associated device tree and there may be an issue with a driver.
 - PCIe link instabilities
   Because the platform board was not built to be a PCIe endpoint (device) but rather a root complex (host), the board has its own PCIe clock generated on the PCB, clock that goes to the SoC and the M.2 edge connector for a potential device. Therefore this board cannot receive a clock from the host PC and has no other choice than to operate in [separate reference clock architecture](https://www.ti.com/lit/an/snaa386/snaa386.pdf), up to 600 ppm (parts per million) difference in the (100MHz) clocks is allowed.
   When the clock difference is too big, or the link is bad (e.g., noise, bad cables and adapters), the following can happen:
