@@ -62,6 +62,18 @@ In order to run the eNVMe project you will need :
   - Alternatively you could use M.2 to oculink (please check signal swap yourself)
   - Or [build](https://github.com/rick-heig/nvme_csd/tree/main/pcb) your own adapters
 
+### Cabling examples
+
+There are several cabling options, here are three common options :
+
+![Cabling](res/pictures/cabling.jpg)
+
+The top cable allows for PCIe x4 and it can end in M.2 or normal PCIe x4 depending on if you use the adapter or not. The bottom two cables allow for PCIe x1.
+
+x4 cabling : [M.2 to PCIe adapter](https://www.delock.com/produkt/64133/merkmale.html?f=s) (twice the same adapter is used) and [PCIe x4 **signal swap** male-to-male cable](http://www.adtlink.cn/en/product/R22SS.html)
+
+x1 cabling : [M.2 adapter](https://www.aliexpress.com/item/1005003495492506.html) (twice the same adapter is used) and [PCIe x1 adapter and USB3 cable](https://www.aliexpress.com/item/10000349570647.html)
+
 ## Further information
 
 ### Getting started
