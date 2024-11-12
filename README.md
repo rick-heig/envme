@@ -59,7 +59,7 @@ In order to run the eNVMe project you will need :
 - PCIe cables to connect to the host PC
   - The cheapest route is an [M.2 adapter](https://www.aliexpress.com/item/1005003495492506.html), [PCIe x1 adapter and USB3 cable](https://www.aliexpress.com/item/10000349570647.html) or [M.2 adapter](https://www.aliexpress.com/item/1005003495492506.html) and USB3 cable. This will provide a x1 PCIe link
   - For a x4 PCIe link, only available with the T6 board, you need a [M.2 x4 to PCIe x4](https://www.delock.com/produkt/62584/merkmale.html) or [x16 adapter](https://www.delock.com/produkt/64133/merkmale.html?f=s) and [PCIe x4 **signal swap** male-to-male cable](http://www.adtlink.cn/en/product/R22SS.html)
-  - Alternatively you could use M.2 to oculink (please check signal swap yourself)
+  - ~~Alternatively you could use M.2 to oculink (please check signal swap yourself)~~ [Schematics](https://www.adt.link/download/ADT%20F99xx%20schematic%2020240522.pdf) indicate there is no signal swap, so this would not work out of the box with two male adapters.
   - Or [build](https://github.com/rick-heig/nvme_csd/tree/main/pcb) your own adapters
 
 ### Cabling examples
