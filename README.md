@@ -87,7 +87,13 @@ The SD card image is ready to use for the [FriendlyElec CM3588 + NAS Kit](https:
 sudo mv /media/<user>/rootfs/boot/exlinux/extlinux.conf.t6 /media/<user>/rootfs/boot/extlinux/extlinux.conf
 ```
 
-Once ready, insert SD card in board and turn it on, connect through UART or SSH and launch the eNVMe firmware with:
+Once ready, insert SD card in board and turn it on.
+
+**As there is no support for HDMI out yet** because the mainline Linux kernel doesn't support HDMI for the RK3588 yet, (you can check development [here](https://gitlab.collabora.com/hardware-enablement/rockchip-3588/notes-for-rockchip-3588/-/blob/main/mainline-status.md)) you need to connect through UART (baudrate is 1500000) pins are described in the wiki : [T6](https://wiki.friendlyelec.com/wiki/index.php/NanoPC-T6) - [cm3588](https://wiki.friendlyelec.com/wiki/index.php/CM3588)
+
+or alternatively via SSH, if the board is in a network that can assign address via DHCP it should get one assigned and the board should be accessible via the hostname `ENVME`, if you have more specific network requirements, setup via UART first.
+
+and launch the eNVMe firmware with:
 
 ```shell
 # Start without backing storage (will read 0's)
