@@ -55,7 +55,7 @@ In order to run the eNVMe project you will need :
   - There are other boards that can be used but it requires porting the project
     - [Examples](https://github.com/rick-heig/nvme_csd/tree/main/platforms) are given in the NVMe Computational Storage Drive (CSD) sister project
 - A micro SD card (at least 8 GB)
-- An UART Adapter (to get a serial console), the board can be used via SSH as well
+- An UART Adapter (to get a serial console), the board can be used via SSH as well. **There is no support for HDMI out yet** because the mainline Linux kernel doesn't support HDMI for the RK3588 yet, check development [here](https://gitlab.collabora.com/hardware-enablement/rockchip-3588/notes-for-rockchip-3588/-/blob/main/mainline-status.md)
 - PCIe cables to connect to the host PC
   - The cheapest route is an [M.2 adapter](https://www.aliexpress.com/item/1005003495492506.html), [PCIe x1 adapter and USB3 cable](https://www.aliexpress.com/item/10000349570647.html) or [M.2 adapter](https://www.aliexpress.com/item/1005003495492506.html) and USB3 cable. This will provide a x1 PCIe link
   - For a x4 PCIe link, only available with the T6 board, you need a [M.2 x4 to PCIe x4](https://www.delock.com/produkt/62584/merkmale.html) or [x16 adapter](https://www.delock.com/produkt/64133/merkmale.html?f=s) and [PCIe x4 **signal swap** male-to-male cable](http://www.adtlink.cn/en/product/R22SS.html)
